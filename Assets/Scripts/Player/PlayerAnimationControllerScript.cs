@@ -29,6 +29,7 @@ public class PlayerAnimationControllerScript : MonoBehaviour
 
     public void playerMovement(float v, float h)
     {
+        
         animCon.SetFloat(Vertical, v);
         animCon.SetFloat(Horizontal, h);
         animCon.SetFloat(Speed, Mathf.Abs(v)+Mathf.Abs(h));
