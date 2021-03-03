@@ -50,7 +50,7 @@ public class AIController : MonoBehaviour
                 
                 if(tmpCor == null)
                 {
-                    Debug.LogError("asdasd");
+                    //Debug.LogError("asdasd");
                     tmpCor = StartCoroutine(LateGetRandomDestination());
                 }
                 
