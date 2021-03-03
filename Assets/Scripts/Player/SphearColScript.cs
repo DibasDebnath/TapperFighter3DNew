@@ -2,7 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class AIDetect : MonoBehaviour
+public class SphearColScript : MonoBehaviour
 {
     public List<GameObject> AIObjects;
 
@@ -18,7 +18,7 @@ public class AIDetect : MonoBehaviour
     {
         if (other.CompareTag("AI"))
         {
-            Debug.Log("AIDetected");
+            Debug.Log("AIDetected in sphere");
             AIObjects.Add(other.gameObject);
         }
     }
@@ -27,7 +27,7 @@ public class AIDetect : MonoBehaviour
     {
         if (other.CompareTag("AI"))
         {
-            Debug.Log("AIGone");
+            Debug.Log("AIGone in sphere");
             AIObjects.Remove(other.gameObject);
         }
     }

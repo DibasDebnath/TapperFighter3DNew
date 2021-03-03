@@ -12,7 +12,7 @@ public class RefHolder : MonoBehaviour
             instance = this;
         }
     }
-
+    
 
     public GamePlay gamePlay;
     public InputController inputController;

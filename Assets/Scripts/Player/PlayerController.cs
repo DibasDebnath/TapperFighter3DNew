@@ -21,7 +21,8 @@ public class PlayerController : MonoBehaviour
 
 
     [Header("Detectors")]
-    public AIDetect aiDetect;
+    public SphearColScript sphearCol;
+    public AttackColScript attackCol;
 
 
     private void Awake()
@@ -32,9 +33,6 @@ public class PlayerController : MonoBehaviour
         }
         
     }
-
-
-
 
     // Start is called before the first frame update
     void Start()
@@ -64,7 +62,7 @@ public class PlayerController : MonoBehaviour
     }
 
 
-
+    #region Player Movement
 
     void movePlayer(float horizontal, float vertical)
     {
@@ -82,23 +80,41 @@ public class PlayerController : MonoBehaviour
     }
     void LookAtAI()
     {
-        if(aiDetect.AIObjects.Count != 0)
+        if(sphearCol.AIObjects.Count > 0)
         {
-            Quaternion rotTarget = Quaternion.LookRotation(aiDetect.AIObjects[0].transform.position - this.transform.position);
+            Vector3 direction = sphearCol.AIObjects[0].transform.position - this.transform.position;
+            direction.y = 0;
+            Quaternion rotTarget = Quaternion.LookRotation(direction);
 
             this.transform.rotation = Quaternion.RotateTowards(this.transform.rotation, rotTarget, 500 * Time.deltaTime);
         }
     }
 
+    #endregion
+
+
+
+    #region Player Attack
 
     public void Attack()
     {
+        // Play Animation
         playerAnimConScript.PlayPunch1();
+
+        // Attack Detected Player
+        if(attackCol.AIObjects.Count > 0)
+        {
+            foreach(GameObject G in attackCol.AIObjects)
+            {
+                G.transform.GetComponent<AIController>().TakeDamage(5);
+            }
+        }
+        
     }
 
 
+    #endregion
 
-    
 
 
 }
