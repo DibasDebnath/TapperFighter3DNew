@@ -6,7 +6,8 @@ using UnityEngine.AI;
 public class AIController : MonoBehaviour
 {
     [SerializeField] private GameObject player;
-    [SerializeField] private PlayerDetect playerDetect;
+    //[SerializeField] private PlayerDetect playerDetect;
+    [SerializeField] private SimplePlayerDetect playerDetect;
 
     private NavMeshAgent agent;
 
@@ -19,12 +20,20 @@ public class AIController : MonoBehaviour
 
     private Coroutine tmpCor;
 
+
+    [Header("Attack Scanner")]
+    private float inputFreq;
+    public float inputCheckFreq;
+    public float inputLag;
+    private float inputWaitTime;
+    public AIAttackColScript attackColScript;
+
     private void Awake()
     {
         agent = GetComponent<NavMeshAgent>();
         player = GameObject.Find("Player");
         currentMode = 0;
-        
+        inputFreq = 1.0f / inputCheckFreq;
     }
 
     // Start is called before the first frame update
@@ -93,7 +102,13 @@ public class AIController : MonoBehaviour
 
     }
 
-
+    private void FixedUpdate()
+    {
+        if (inputWaitTime > 0)
+        {
+            inputWaitTime -= inputFreq;
+        }
+    }
 
 
 
@@ -139,7 +154,35 @@ public class AIController : MonoBehaviour
 
     #endregion
 
+    #region AI Attack
 
-  
+    public void Attack()
+    {
+
+        if (inputWaitTime <= 0)
+        {
+            Attack1();
+            inputWaitTime += inputLag;
+        }
+
+    }
+
+
+    private void Attack1()
+    {
+        // Play Animation
+        //playerAnimConScript.PlayPunch1();
+
+        // Attack Detected Player
+        if(attackColScript.player != null)
+        {
+            attackColScript.player.GetComponent<PlayerController>().TakeDamage(5);
+        }
+                
+    }
+
+
+    #endregion
+
 
 }

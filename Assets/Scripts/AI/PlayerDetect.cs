@@ -30,12 +30,14 @@ public class PlayerDetect : MonoBehaviour
 
 
     Mesh mesh;
+    private MeshFilter meshFilter;
 
     private void Awake()
     {
         playerInSight = false;
         player = GameObject.Find("Player");
         scanInterval = 1.0f / scanFreq;
+        meshFilter = GetComponent<MeshFilter>();
     }
 
     // Start is called before the first frame update
@@ -53,6 +55,12 @@ public class PlayerDetect : MonoBehaviour
             scanTimer += scanInterval;
             Scan();
         }
+
+
+        //if (mesh)
+        //{
+        //    meshFilter.mesh = mesh;
+        //}
     }
 
     private void Scan()
@@ -60,7 +68,7 @@ public class PlayerDetect : MonoBehaviour
         count = Physics.OverlapSphereNonAlloc(transform.position, fovDistance, colliders, layers, QueryTriggerInteraction.Collide);
         if (count == 0)
         {
-            //playerInSight = false;
+            playerInSight = false;
         }
         for (int i = 0; i < count; ++i)
         {
@@ -108,7 +116,7 @@ public class PlayerDetect : MonoBehaviour
 
         if(direction.y < 0 || direction.y > fovHight)
         {
-            Debug.Log("1");
+            //Debug.Log("1");
             return false;
         }
 
@@ -116,7 +124,7 @@ public class PlayerDetect : MonoBehaviour
         float deltaAngle = Vector3.Angle(direction, transform.forward);
         if(deltaAngle > fovAngle)
         {
-            Debug.Log("2");
+            //Debug.Log("2");
             return false;
         }
 
@@ -124,7 +132,7 @@ public class PlayerDetect : MonoBehaviour
         dest.y = origin.y;
         if (Physics.Linecast(origin, dest, blockLayers))
         {
-            Debug.Log("3");
+            //Debug.Log("3");
             return false;
         }
 

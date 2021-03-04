@@ -7,13 +7,16 @@ public class InputController : MonoBehaviour
 
 
     Controller inputAction;
+    [Header("Take Input")]
+    public bool takeInput;
+
 
     //Private Variables
-    public bool tap;
+    private bool tap;
     private bool processedTap;
     bool move;
     float moveDisplacement;
-    public Vector2 screenTouchPosition;
+    private Vector2 screenTouchPosition;
     Vector2 currentTouchPosition;
     Vector2 oldTouchPosition;
 
@@ -24,7 +27,7 @@ public class InputController : MonoBehaviour
 
     private void Awake()
     {
-
+        
         inputAction = new Controller();
         inputAction.Player.TouchStart.performed += ctx => TouchStart();
         inputAction.Player.TouchEnd.performed += ctx => TouchEnd();
@@ -42,18 +45,30 @@ public class InputController : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        getJoysticInput();
+        if (takeInput)
+        {
+            getJoysticInput();
+        }
+        
     }
 
 
     void TouchStart()
     {
-        Debug.Log("Tap Start");
+        if (takeInput)
+        {
+            Debug.Log("Tap Start");
+        }
+        
     }
     void TouchEnd()
     {
-        Debug.Log("Tap End");
-        RefHolder.instance.playerController.Attack();
+        if (takeInput)
+        {
+            Debug.Log("Tap End");
+            RefHolder.instance.playerController.Attack();
+        }
+           
     }
 
     void getJoysticInput()

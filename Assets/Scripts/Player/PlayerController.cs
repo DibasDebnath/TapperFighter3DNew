@@ -5,6 +5,9 @@ using UnityEngine;
 public class PlayerController : MonoBehaviour
 {
 
+    [Header("Player Health")]
+    public float health = 100;
+    public float armor = 0;
 
     
     [Header("PlayerMovement")]
@@ -17,12 +20,21 @@ public class PlayerController : MonoBehaviour
 
 
     [Header("PlayerAnimation")]
-    public PlayerAnimationControllerScript playerAnimConScript;
+    public PlayerAnimConScript animConScript;
 
 
     [Header("Detectors")]
     public SphearColScript sphearCol;
     public AttackColScript attackCol;
+
+
+
+    [Header("Attack Scanner")]
+    private float inputFreq;
+    public float inputCheckFreq;
+    public float inputLag;
+    private float inputWaitTime;
+    
 
 
     private void Awake()
@@ -31,7 +43,7 @@ public class PlayerController : MonoBehaviour
         {
             characterController = GetComponent<CharacterController>();
         }
-        
+        inputFreq = 1.0f / inputCheckFreq;
     }
 
     // Start is called before the first frame update
@@ -49,16 +61,24 @@ public class PlayerController : MonoBehaviour
         {
             isMoving = true;
             movePlayer(RefHolder.instance.inputController.horizontal, RefHolder.instance.inputController.vertical);
-            playerAnimConScript.playerMovement(RefHolder.instance.inputController.horizontal, RefHolder.instance.inputController.vertical);
+            animConScript.playerMovement(RefHolder.instance.inputController.horizontal, RefHolder.instance.inputController.vertical);
         }
         else
         {
             isMoving = false;
-            playerAnimConScript.playerMovement(0, 0);
+            animConScript.playerMovement(0, 0);
             LookAtAI();
         }
         
         
+    }
+
+    private void FixedUpdate()
+    {
+        if(inputWaitTime > 0)
+        {
+            inputWaitTime -= inputFreq;
+        }
     }
 
 
@@ -73,7 +93,15 @@ public class PlayerController : MonoBehaviour
             float angle = Mathf.SmoothDampAngle(transform.eulerAngles.y, targetAngle, ref turnSmoothVelocity, turnSmoothTime);
             transform.rotation = Quaternion.Euler(0f, angle, 0f);
             Vector3 moveDirection = Quaternion.Euler(0, targetAngle, 0) * Vector3.forward;
-            characterController.Move(moveDirection * speed * Time.deltaTime);
+            if (sphearCol.AIObjects.Count > 0)
+            {
+                characterController.Move(moveDirection * speed * Time.deltaTime);
+            }
+            else
+            {
+                characterController.Move(moveDirection * speed * 2 * Time.deltaTime);
+            }
+                
             
         }
         //characterController.ho
@@ -98,17 +126,67 @@ public class PlayerController : MonoBehaviour
 
     public void Attack()
     {
+        
+        if(inputWaitTime <= 0)
+        {
+            Attack1();
+            inputWaitTime += inputLag;
+        }
+        
+    }
+
+
+    private void Attack1()
+    {
         // Play Animation
-        playerAnimConScript.PlayPunch1();
+        animConScript.PlayPunch1();
 
         // Attack Detected Player
-        if(attackCol.AIObjects.Count > 0)
+        if (attackCol.AIObjects.Count > 0)
         {
-            foreach(GameObject G in attackCol.AIObjects)
+            foreach (GameObject G in attackCol.AIObjects)
             {
                 G.transform.GetComponent<AIController>().TakeDamage(5);
             }
         }
+    }
+
+
+    #endregion
+
+
+    #region Take Damage
+
+    public void TakeDamage(float damage)
+    {
+        if(armor > 0)
+        {
+            armor -= damage;
+            if (armor <= 0)
+            {
+                armor = 0;
+            }
+        }
+        else
+        {
+            health -= damage;
+            if (health <= 0)
+            {
+                health = 0;
+                // Die
+            }
+        }
+
+        //Play Animation
+
+
+
+        inputWaitTime += inputLag;
+
+    }
+
+    private void GetDamage1()
+    {
         
     }
 
