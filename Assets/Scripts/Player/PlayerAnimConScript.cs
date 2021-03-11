@@ -11,8 +11,14 @@ public class PlayerAnimConScript : MonoBehaviour
 
     private static string Horizontal = "Horizontal";
     private static string Vertical = "Vertical";
-    private static string Speed = "Speed";
-    private static string Punch1 = "Punch1";
+    private static string SPEED = "Speed";
+    private static string PUNCH1 = "Punch1";
+    private static string PUNCH2 = "Punch2";
+    private static string SUPER1 = "Super1";
+    private static string GETHIT1 = "GetHit1";
+    private static string IDLE = "Idle";
+    private static string RUN = "Run";
+    private static string FISTWALK = "FistWalk";
 
 
     // Start is called before the first frame update
@@ -32,12 +38,48 @@ public class PlayerAnimConScript : MonoBehaviour
         
         //animCon.SetFloat(Vertical, v);
         //animCon.SetFloat(Horizontal, h);
-        animCon.SetFloat(Speed, Mathf.Abs(v)+Mathf.Abs(h));
+        //animCon.SetFloat(Speed, Mathf.Abs(v)+Mathf.Abs(h));
     }
 
-    public void PlayPunch1()
+    public void Walk()
     {
-        PlayAnimation(Punch1);
+        animCon.SetBool(FISTWALK, true);
+        animCon.SetBool(RUN, false);
+        animCon.SetBool(IDLE, false);
+    }
+
+    public void Run()
+    {
+        animCon.SetBool(RUN, true);
+        animCon.SetBool(IDLE, false);
+        animCon.SetBool(FISTWALK, false);
+    }
+
+    public void Idle()
+    {
+        animCon.SetBool(IDLE, true);
+        animCon.SetBool(FISTWALK, false);
+        animCon.SetBool(RUN, false);
+    }
+
+    public void Punch1()
+    {
+        PlayAnimation(PUNCH1);
+    }
+
+    public void Punch2()
+    {
+        PlayAnimation(PUNCH2);
+    }
+
+    public void Super1()
+    {
+        PlayAnimation(SUPER1);
+    }
+
+    public void GetHit1()
+    {
+        PlayAnimation(GETHIT1);
     }
 
 

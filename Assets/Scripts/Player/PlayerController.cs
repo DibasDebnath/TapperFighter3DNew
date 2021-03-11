@@ -18,6 +18,15 @@ public class PlayerController : MonoBehaviour
     float turnSmoothVelocity;
     public bool isMoving;
 
+    [Header("Player Gravity")]
+    public float gravity;
+    public float currentGravity;
+    public float constantGravity;
+    public float maxGravity;
+
+    private Vector3 gravityDirection;
+    private Vector3 gravityMovement;
+
 
     [Header("PlayerAnimation")]
     public PlayerAnimConScript animConScript;
@@ -44,6 +53,7 @@ public class PlayerController : MonoBehaviour
             characterController = GetComponent<CharacterController>();
         }
         inputFreq = 1.0f / inputCheckFreq;
+        gravityDirection = -Vector3.down;
     }
 
     // Start is called before the first frame update
@@ -55,18 +65,18 @@ public class PlayerController : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        //LookAtAI();
+        calculateGravity();
         //Debug.Log(joystick.Horizontal);
         if (RefHolder.instance.inputController.horizontal !=0f && RefHolder.instance.inputController.vertical != 0f)
         {
             isMoving = true;
             movePlayer(RefHolder.instance.inputController.horizontal, RefHolder.instance.inputController.vertical);
-            animConScript.playerMovement(RefHolder.instance.inputController.horizontal, RefHolder.instance.inputController.vertical);
+            
         }
         else
         {
             isMoving = false;
-            animConScript.playerMovement(0, 0);
+            animConScript.Idle();
             LookAtAI();
         }
         
@@ -86,24 +96,38 @@ public class PlayerController : MonoBehaviour
 
     void movePlayer(float horizontal, float vertical)
     {
-        Vector3 direction = new Vector3(horizontal, 0, vertical).normalized;
-        if(direction.magnitude >= 0.01f)
+        if(inputWaitTime <= 0)
         {
-            float targetAngle = Mathf.Atan2(direction.x,direction.z) * Mathf.Rad2Deg + camTransform.eulerAngles.y;
-            float angle = Mathf.SmoothDampAngle(transform.eulerAngles.y, targetAngle, ref turnSmoothVelocity, turnSmoothTime);
-            transform.rotation = Quaternion.Euler(0f, angle, 0f);
-            Vector3 moveDirection = Quaternion.Euler(0, targetAngle, 0) * Vector3.forward;
-            if (sphearCol.AIObjects.Count > 0)
+            Vector3 direction = new Vector3(horizontal, 0, vertical).normalized;
+            if (direction.magnitude >= 0.01f)
             {
-                characterController.Move(moveDirection * speed * Time.deltaTime);
-            }
-            else
-            {
-                characterController.Move(moveDirection * speed * 2 * Time.deltaTime);
-            }
+                float targetAngle = Mathf.Atan2(direction.x, direction.z) * Mathf.Rad2Deg + camTransform.eulerAngles.y;
+                if (sphearCol.AIObjects.Count > 0)
+                {
+                    LookAtAI();
+                }
+                else
+                {
+                    float angle = Mathf.SmoothDampAngle(transform.eulerAngles.y, targetAngle, ref turnSmoothVelocity, turnSmoothTime);
+                    transform.rotation = Quaternion.Euler(0f, angle, 0f);
+                }
                 
-            
+                Vector3 moveDirection = Quaternion.Euler(0, targetAngle, 0) * Vector3.forward;
+                if (sphearCol.AIObjects.Count > 0)
+                {
+                    characterController.Move(gravityMovement+ moveDirection * speed * Time.deltaTime);
+                    animConScript.Walk();
+                }
+                else
+                {
+                    characterController.Move(gravityMovement + moveDirection * speed * 1.5f * Time.deltaTime);
+                    animConScript.Run();
+                }
+
+
+            }
         }
+        
         //characterController.ho
     }
     void LookAtAI()
@@ -116,6 +140,33 @@ public class PlayerController : MonoBehaviour
 
             this.transform.rotation = Quaternion.RotateTowards(this.transform.rotation, rotTarget, 500 * Time.deltaTime);
         }
+    }
+
+    #endregion
+
+
+
+    #region Gravity
+
+
+    private bool IsGrounded()
+    {
+        return characterController.isGrounded;
+    }
+    private void calculateGravity()
+    {
+        if (IsGrounded())
+        {
+            currentGravity = constantGravity;
+        }
+        else
+        {
+            if(currentGravity > maxGravity)
+            {
+                currentGravity -= gravity * Time.deltaTime;
+            }
+        }
+        gravityMovement = gravityDirection * currentGravity;
     }
 
     #endregion
@@ -139,7 +190,15 @@ public class PlayerController : MonoBehaviour
     private void Attack1()
     {
         // Play Animation
-        animConScript.PlayPunch1();
+        if(Random.Range(0,2) == 0)
+        {
+            animConScript.Punch1();
+        }
+        else
+        {
+            animConScript.Punch2();
+        }
+        
 
         // Attack Detected Player
         if (attackCol.AIObjects.Count > 0)
@@ -178,7 +237,7 @@ public class PlayerController : MonoBehaviour
         }
 
         //Play Animation
-
+        animConScript.GetHit1();
 
 
         inputWaitTime += inputLag;

@@ -16,9 +16,21 @@ public class AIController : MonoBehaviour
     // 1 = Going to Player
     // 2 = Attacking
     public int currentMode;
+
+    public enum Mode
+    {
+        roaming,
+        Chasing,
+        Attacking,
+    }
+    public Mode mode;
     public bool destinationSet;
 
     private Coroutine tmpCor;
+
+
+    [Header("PlayerAnimation")]
+    public PlayerAnimConScript animConScript;
 
 
     [Header("Attack Scanner")]
@@ -28,11 +40,19 @@ public class AIController : MonoBehaviour
     private float inputWaitTime;
     public AIAttackColScript attackColScript;
 
+
+    [Header("AI Health")]
+    public float health = 100;
+    public float armor = 0;
+
+
+
     private void Awake()
     {
         agent = GetComponent<NavMeshAgent>();
         player = GameObject.Find("Player");
         currentMode = 0;
+        mode = Mode.roaming;
         inputFreq = 1.0f / inputCheckFreq;
     }
 
@@ -47,12 +67,22 @@ public class AIController : MonoBehaviour
     void Update()
     {
         // Player not detected
-        if (currentMode == 0)
+        
+        if (mode == Mode.roaming)
         {
             if (!destinationSet)
             {
                 SetRandomDestination();
                 destinationSet = true;
+            }
+            if (playerDetect.playerInSight)
+            {
+                mode = Mode.Chasing;
+                if (tmpCor != null)
+                {
+                    StopCoroutine(tmpCor);
+                    tmpCor = null;
+                }
             }
             if (agent.remainingDistance <= agent.stoppingDistance + 0.1f)
             {
@@ -65,35 +95,36 @@ public class AIController : MonoBehaviour
                 
             }
         }
-        //Player Detected and GOing to Player
-        if (playerDetect.playerInSight)
+        //Player Detected and Going to Player
+        else if (mode == Mode.Chasing)
         {
-            currentMode = 1;
-            if (tmpCor != null)
-            {
-                StopCoroutine(tmpCor);
-                tmpCor = null;
-            }
+            
             agent.SetDestination(player.transform.position);
             if (agent.remainingDistance <= agent.stoppingDistance + 0.1f)
             {
-                currentMode = 2;
+                mode = Mode.Attacking;
             }
-            else
+            if (Vector3.Distance(this.transform.position, player.transform.position) > 2f)
             {
-                currentMode = 1;
+                mode = Mode.roaming;
             }
+
+
+        }
+        //AttackMode
+        else if (mode == Mode.Attacking)
+        {
+            LookAtPlayer();
+            if(Vector3.Distance(this.transform.position,player.transform.position) > 1.2f)
+            {
+                mode = Mode.Chasing;
+            }
+            Attack();
 
         }
         else
         {
-            currentMode = 0;
-        }
-        
-        //AttackMode
-        if(currentMode == 2)
-        {
-
+            mode = Mode.roaming;
         }
         
 
@@ -111,12 +142,50 @@ public class AIController : MonoBehaviour
     }
 
 
+    void LookAtPlayer()
+    {
+        Vector3 direction = player.transform.position - this.transform.position;
+        direction.y = 0;
+        Quaternion rotTarget = Quaternion.LookRotation(direction);
+
+        this.transform.rotation = Quaternion.RotateTowards(this.transform.rotation, rotTarget, 500 * Time.deltaTime);
+
+
+    }
+
 
     #region Getting Damage
 
     public void TakeDamage(int damage)
     {
         Debug.Log("Damage " + damage);
+        if (armor > 0)
+        {
+            armor -= damage;
+            if (armor <= 0)
+            {
+                armor = 0;
+            }
+        }
+        else
+        {
+            health -= damage;
+            if (health <= 0)
+            {
+                health = 0;
+                // Die
+            }
+        }
+
+        //Play Animation
+        animConScript.GetHit1();
+
+
+        inputWaitTime += inputLag;
+        if(inputWaitTime > 5)
+        {
+            inputWaitTime = 2;
+        }
     }
 
     #endregion
@@ -154,6 +223,9 @@ public class AIController : MonoBehaviour
 
     #endregion
 
+
+
+
     #region AI Attack
 
     public void Attack()
@@ -171,10 +243,17 @@ public class AIController : MonoBehaviour
     private void Attack1()
     {
         // Play Animation
-        //playerAnimConScript.PlayPunch1();
+        if (Random.Range(0, 2) == 0)
+        {
+            animConScript.Punch1();
+        }
+        else
+        {
+            animConScript.Punch2();
+        }
 
         // Attack Detected Player
-        if(attackColScript.player != null)
+        if (attackColScript.player != null)
         {
             attackColScript.player.GetComponent<PlayerController>().TakeDamage(5);
         }
