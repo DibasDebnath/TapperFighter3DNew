@@ -11,12 +11,7 @@ public class AIController : MonoBehaviour
 
     private NavMeshAgent agent;
 
-    [Header("AI Modes")]
-    // 0 = Roaming
-    // 1 = Going to Player
-    // 2 = Attacking
-    public int currentMode;
-
+    
     public enum Mode
     {
         roaming,
@@ -51,7 +46,6 @@ public class AIController : MonoBehaviour
     {
         agent = GetComponent<NavMeshAgent>();
         player = GameObject.Find("Player");
-        currentMode = 0;
         mode = Mode.roaming;
         inputFreq = 1.0f / inputCheckFreq;
     }

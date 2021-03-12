@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Events;
 
 public class PlayerController : MonoBehaviour
 {
@@ -8,41 +9,49 @@ public class PlayerController : MonoBehaviour
     [Header("Player Health")]
     public float health = 100;
     public float armor = 0;
-
+   
     
     [Header("PlayerMovement")]
-    public float speed = 1f;
-    public float turnSmoothTime = 0.08f;
-    public Transform camTransform;
-    public CharacterController characterController;
+    [SerializeField] float topSpeed = 1f;
+    [SerializeField] float acceleration = 0.2f;
+    [SerializeField] float turnSmoothTime = 0.08f;
+    [SerializeField] Transform camTransform;
+    CharacterController characterController;
     float turnSmoothVelocity;
-    public bool isMoving;
+    bool isMoving;
+    float speed = 0f;
 
     [Header("Player Gravity")]
-    public float gravity;
-    public float currentGravity;
-    public float constantGravity;
-    public float maxGravity;
+    [SerializeField] float gravity;
+    float currentGravity;
+    [SerializeField] float constantGravity;
+    [SerializeField] float maxGravity;
 
-    private Vector3 gravityDirection;
-    private Vector3 gravityMovement;
+    Vector3 gravityDirection;
+    Vector3 gravityMovement;
 
 
     [Header("PlayerAnimation")]
-    public PlayerAnimConScript animConScript;
+    //[SerializeField] PlayerAnimConScript animConScript;
+    [HideInInspector] public UnityEvent onAttack;
+    [HideInInspector] public UnityEvent onIdle;
+    [HideInInspector] public UnityEvent<float> onWalk;
+    [HideInInspector] public UnityEvent onRun;
+    [HideInInspector] public UnityEvent onHit;
+    
 
 
     [Header("Detectors")]
-    public SphearColScript sphearCol;
-    public AttackColScript attackCol;
+    [SerializeField] SphearColScript sphearCol;
+    [SerializeField] AttackColScript attackCol;
 
 
 
     [Header("Attack Scanner")]
-    private float inputFreq;
-    public float inputCheckFreq;
-    public float inputLag;
-    private float inputWaitTime;
+    float inputFreq;
+    [SerializeField] float inputCheckFreq;
+    [SerializeField] float inputLag;
+    float inputWaitTime;
     
 
 
@@ -54,6 +63,12 @@ public class PlayerController : MonoBehaviour
         }
         inputFreq = 1.0f / inputCheckFreq;
         gravityDirection = -Vector3.down;
+
+        
+        // calculate the correct vertical position:
+        float correctHeight = characterController.center.y + characterController.skinWidth;
+        // set the controller center vector:
+        characterController.center = new Vector3(0, correctHeight, 0);
     }
 
     // Start is called before the first frame update
@@ -69,14 +84,19 @@ public class PlayerController : MonoBehaviour
         //Debug.Log(joystick.Horizontal);
         if (RefHolder.instance.inputController.horizontal !=0f && RefHolder.instance.inputController.vertical != 0f)
         {
-            isMoving = true;
-            movePlayer(RefHolder.instance.inputController.horizontal, RefHolder.instance.inputController.vertical);
+            if(inputWaitTime <= 0)
+            {
+                isMoving = true;
+                movePlayer(RefHolder.instance.inputController.horizontal, RefHolder.instance.inputController.vertical);
+            }
+           
             
         }
         else
         {
             isMoving = false;
-            animConScript.Idle();
+            //animConScript.Idle();
+            onIdle?.Invoke();
             LookAtAI();
         }
         
@@ -89,10 +109,28 @@ public class PlayerController : MonoBehaviour
         {
             inputWaitTime -= inputFreq;
         }
+        if (isMoving)
+        {
+            SpeedIncreaser();
+        }
+        else
+        {
+            speed = 0f;
+        }
     }
 
 
     #region Player Movement
+
+
+    void SpeedIncreaser()
+    {
+        speed += acceleration;
+        if(speed > topSpeed)
+        {
+            speed = topSpeed;
+        }
+    }
 
     void movePlayer(float horizontal, float vertical)
     {
@@ -115,16 +153,21 @@ public class PlayerController : MonoBehaviour
                 Vector3 moveDirection = Quaternion.Euler(0, targetAngle, 0) * Vector3.forward;
                 if (sphearCol.AIObjects.Count > 0)
                 {
-                    characterController.Move(gravityMovement+ moveDirection * speed * Time.deltaTime);
-                    animConScript.Walk();
+                    //characterController.Move(gravityMovement+ moveDirection * speed * 0.5f * Time.deltaTime);
+                    //animConScript.Walk();
+                    float angle = Vector3.Angle(this.transform.forward , moveDirection);
+                    Vector3 cross = Vector3.Cross(this.transform.forward, moveDirection);
+                    if (cross.y < 0) angle = -angle;
+                    //Debug.Log(angle);
+                    onWalk.Invoke(angle);
                 }
                 else
                 {
-                    characterController.Move(gravityMovement + moveDirection * speed * 1.5f * Time.deltaTime);
-                    animConScript.Run();
+                    //characterController.Move(gravityMovement + moveDirection * speed * 1.5f * Time.deltaTime);
+                    //animConScript.Run();
+                    onRun.Invoke();
                 }
-
-
+                
             }
         }
         
@@ -190,14 +233,7 @@ public class PlayerController : MonoBehaviour
     private void Attack1()
     {
         // Play Animation
-        if(Random.Range(0,2) == 0)
-        {
-            animConScript.Punch1();
-        }
-        else
-        {
-            animConScript.Punch2();
-        }
+        onAttack.Invoke();
         
 
         // Attack Detected Player
@@ -237,7 +273,8 @@ public class PlayerController : MonoBehaviour
         }
 
         //Play Animation
-        animConScript.GetHit1();
+        //animConScript.GetHit1();
+        onHit.Invoke();
 
 
         inputWaitTime += inputLag;

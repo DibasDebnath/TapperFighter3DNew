@@ -4,28 +4,49 @@ using UnityEngine;
 
 public class PlayerAnimConScript : MonoBehaviour
 {
+    public PlayerController playerController;
 
     public Animator animCon;
+    private static string HFISTWALK = "hFistWalk";
+    private static string VFISTWALK = "vFistWalk";
 
-
-
-    private static string Horizontal = "Horizontal";
-    private static string Vertical = "Vertical";
     private static string SPEED = "Speed";
     private static string PUNCH1 = "Punch1";
     private static string PUNCH2 = "Punch2";
     private static string SUPER1 = "Super1";
     private static string GETHIT1 = "GetHit1";
+
     private static string IDLE = "Idle";
     private static string RUN = "Run";
     private static string FISTWALK = "FistWalk";
+    private static string FISTIDLE = "FistIdle";
+    private static string WALK = "Walk";
 
+    List<string> animationNameList = new List<string>();
+
+    void Awake()
+    {
+        playerController?.onIdle.AddListener(Idle);
+        playerController?.onRun.AddListener(Run);
+        playerController?.onWalk.AddListener(Walk);
+        playerController?.onHit.AddListener(GetHit1);
+        playerController?.onAttack.AddListener(Punch);
+
+
+        animationNameList.Add(IDLE);
+        animationNameList.Add(RUN);
+        animationNameList.Add(FISTWALK);
+        animationNameList.Add(FISTIDLE);
+        animationNameList.Add(WALK);
+
+    }
 
     // Start is called before the first frame update
     void Start()
     {
         
     }
+    
 
     // Update is called once per frame
     void Update()
@@ -41,25 +62,85 @@ public class PlayerAnimConScript : MonoBehaviour
         //animCon.SetFloat(Speed, Mathf.Abs(v)+Mathf.Abs(h));
     }
 
-    public void Walk()
+    void SetBoolOfAnim(string animName)
     {
-        animCon.SetBool(FISTWALK, true);
-        animCon.SetBool(RUN, false);
-        animCon.SetBool(IDLE, false);
+        foreach(string str in animationNameList)
+        {
+            if(string.Equals(str,animName))
+            {
+                animCon.SetBool(str,true);
+            }
+            else
+            {
+                animCon.SetBool(str, false);
+            }
+        }
+    }
+
+    public void Walk(float angle)
+    {
+        SetBoolOfAnim(FISTWALK);
+
+
+        //Forward   -45 - 0 - 45
+        //Back      -135 - -180 , 135 - 180
+        //Left      -45 - -135
+        //Right     45 - 135
+
+        if ((angle < 45f && angle > 0f) || (angle > -45f && angle < 0f))
+        {
+            Debug.Log("Forward");
+            animCon.SetFloat(VFISTWALK, 1);
+            animCon.SetFloat(HFISTWALK, 0);
+        }
+        else if ((angle < -135f && angle > -180f) || (angle > 135f && angle < 180f))
+        {
+            Debug.Log("BackWard");
+            animCon.SetFloat(VFISTWALK, -1);
+            animCon.SetFloat(HFISTWALK, 0);
+        }
+        else if(angle > 45f && angle < 135f)
+        {
+            Debug.Log("Right");
+            animCon.SetFloat(VFISTWALK, 0);
+            animCon.SetFloat(HFISTWALK, 1);
+        }
+        else if (angle < -45f && angle > -135f)
+        {
+            Debug.Log("Left");
+            animCon.SetFloat(VFISTWALK, 0);
+            animCon.SetFloat(HFISTWALK, -1);
+        }
+        else
+        {
+            Debug.Log(angle);
+            animCon.SetFloat(VFISTWALK, 0);
+            animCon.SetFloat(HFISTWALK, 0);
+        }
     }
 
     public void Run()
     {
-        animCon.SetBool(RUN, true);
-        animCon.SetBool(IDLE, false);
-        animCon.SetBool(FISTWALK, false);
+        SetBoolOfAnim(RUN);
+        
     }
 
     public void Idle()
     {
-        animCon.SetBool(IDLE, true);
-        animCon.SetBool(FISTWALK, false);
-        animCon.SetBool(RUN, false);
+        SetBoolOfAnim(IDLE);
+        
+    }
+
+    public void Punch()
+    {
+        if(Random.Range(0,2) == 0)
+        {
+            Punch1();
+        }
+        else
+        {
+            Punch2();
+        }
     }
 
     public void Punch1()
