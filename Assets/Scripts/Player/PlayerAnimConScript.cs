@@ -77,11 +77,11 @@ public class PlayerAnimConScript : MonoBehaviour
         }
     }
 
-    public void Walk(float angle)
+    public void Walk(float speed,float angle)
     {
         SetBoolOfAnim(FISTWALK);
 
-
+        float speedInOne = speed / RefHolder.instance.playerController.topSpeed;
         //Forward   -45 - 0 - 45
         //Back      -135 - -180 , 135 - 180
         //Left      -45 - -135
@@ -90,26 +90,26 @@ public class PlayerAnimConScript : MonoBehaviour
         if ((angle < 45f && angle > 0f) || (angle > -45f && angle < 0f))
         {
             Debug.Log("Forward");
-            animCon.SetFloat(VFISTWALK, 1);
+            animCon.SetFloat(VFISTWALK, speedInOne);
             animCon.SetFloat(HFISTWALK, 0);
         }
         else if ((angle < -135f && angle > -180f) || (angle > 135f && angle < 180f))
         {
             Debug.Log("BackWard");
-            animCon.SetFloat(VFISTWALK, -1);
+            animCon.SetFloat(VFISTWALK, -speedInOne);
             animCon.SetFloat(HFISTWALK, 0);
         }
         else if(angle > 45f && angle < 135f)
         {
             Debug.Log("Right");
             animCon.SetFloat(VFISTWALK, 0);
-            animCon.SetFloat(HFISTWALK, 1);
+            animCon.SetFloat(HFISTWALK, speedInOne);
         }
         else if (angle < -45f && angle > -135f)
         {
             Debug.Log("Left");
             animCon.SetFloat(VFISTWALK, 0);
-            animCon.SetFloat(HFISTWALK, -1);
+            animCon.SetFloat(HFISTWALK, -speedInOne);
         }
         else
         {

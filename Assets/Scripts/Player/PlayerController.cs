@@ -12,7 +12,7 @@ public class PlayerController : MonoBehaviour
    
     
     [Header("PlayerMovement")]
-    [SerializeField] float topSpeed = 1f;
+    [SerializeField] public float topSpeed = 1f;
     [SerializeField] float acceleration = 0.2f;
     [SerializeField] float turnSmoothTime = 0.08f;
     [SerializeField] Transform camTransform;
@@ -35,7 +35,7 @@ public class PlayerController : MonoBehaviour
     //[SerializeField] PlayerAnimConScript animConScript;
     [HideInInspector] public UnityEvent onAttack;
     [HideInInspector] public UnityEvent onIdle;
-    [HideInInspector] public UnityEvent<float> onWalk;
+    [HideInInspector] public UnityEvent<float,float> onWalk;
     [HideInInspector] public UnityEvent onRun;
     [HideInInspector] public UnityEvent onHit;
     
@@ -159,7 +159,7 @@ public class PlayerController : MonoBehaviour
                     Vector3 cross = Vector3.Cross(this.transform.forward, moveDirection);
                     if (cross.y < 0) angle = -angle;
                     //Debug.Log(angle);
-                    onWalk.Invoke(angle);
+                    onWalk.Invoke(speed,angle);
                 }
                 else
                 {
