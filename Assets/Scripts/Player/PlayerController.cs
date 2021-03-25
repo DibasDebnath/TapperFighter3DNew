@@ -35,6 +35,7 @@ public class PlayerController : MonoBehaviour
     //[SerializeField] PlayerAnimConScript animConScript;
     [HideInInspector] public UnityEvent onAttack;
     [HideInInspector] public UnityEvent onIdle;
+    [HideInInspector] public UnityEvent onFistIdle;
     [HideInInspector] public UnityEvent<float,float> onWalk;
     [HideInInspector] public UnityEvent onRun;
     [HideInInspector] public UnityEvent onHit;
@@ -96,7 +97,15 @@ public class PlayerController : MonoBehaviour
         {
             isMoving = false;
             //animConScript.Idle();
-            onIdle?.Invoke();
+            if (sphearCol.AIObjects.Count > 0)
+            {
+                onFistIdle?.Invoke();
+            }
+            else
+            {
+                onIdle?.Invoke();
+            }
+                
             LookAtAI();
         }
         
@@ -153,7 +162,7 @@ public class PlayerController : MonoBehaviour
                 Vector3 moveDirection = Quaternion.Euler(0, targetAngle, 0) * Vector3.forward;
                 if (sphearCol.AIObjects.Count > 0)
                 {
-                    //characterController.Move(gravityMovement+ moveDirection * speed * 0.5f * Time.deltaTime);
+                    characterController.Move(gravityMovement+ moveDirection * speed * 0.5f * Time.deltaTime);
                     //animConScript.Walk();
                     float angle = Vector3.Angle(this.transform.forward , moveDirection);
                     Vector3 cross = Vector3.Cross(this.transform.forward, moveDirection);
@@ -163,7 +172,7 @@ public class PlayerController : MonoBehaviour
                 }
                 else
                 {
-                    //characterController.Move(gravityMovement + moveDirection * speed * 1.5f * Time.deltaTime);
+                    characterController.Move(gravityMovement + moveDirection * speed * 1.5f * Time.deltaTime);
                     //animConScript.Run();
                     onRun.Invoke();
                 }

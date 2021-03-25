@@ -27,6 +27,7 @@ public class PlayerAnimConScript : MonoBehaviour
     void Awake()
     {
         playerController?.onIdle.AddListener(Idle);
+        playerController?.onFistIdle.AddListener(FistIdle);
         playerController?.onRun.AddListener(Run);
         playerController?.onWalk.AddListener(Walk);
         playerController?.onHit.AddListener(GetHit1);
@@ -81,7 +82,10 @@ public class PlayerAnimConScript : MonoBehaviour
     {
         SetBoolOfAnim(FISTWALK);
 
-        float speedInOne = speed / RefHolder.instance.playerController.topSpeed;
+        // Need Work
+        angle = 1f;
+        float speedInOne = 1;// speed / RefHolder.instance.playerController.topSpeed;
+
         //Forward   -45 - 0 - 45
         //Back      -135 - -180 , 135 - 180
         //Left      -45 - -135
@@ -128,6 +132,10 @@ public class PlayerAnimConScript : MonoBehaviour
     public void Idle()
     {
         SetBoolOfAnim(IDLE);
+        
+    }public void FistIdle()
+    {
+        SetBoolOfAnim(FISTIDLE);
         
     }
 
