@@ -61,7 +61,6 @@ public class AIController : MonoBehaviour
     void Update()
     {
         // Player not detected
-        
         if (mode == Mode.roaming)
         {
             if (!destinationSet)
@@ -246,12 +245,21 @@ public class AIController : MonoBehaviour
             animConScript.Punch2();
         }
 
+        StartCoroutine(DelayedAttack());
+
+    }
+
+
+    IEnumerator DelayedAttack()
+    {
+        yield return new WaitForSeconds(.15f);
+
+        // Attack Detected Player
         // Attack Detected Player
         if (attackColScript.player != null)
         {
             attackColScript.player.GetComponent<PlayerController>().TakeDamage(5);
         }
-                
     }
 
 

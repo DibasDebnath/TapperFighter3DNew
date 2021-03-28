@@ -47,14 +47,12 @@ public class PlayerController : MonoBehaviour
     [SerializeField] AttackColScript attackCol;
 
 
-
     [Header("Attack Scanner")]
     float inputFreq;
     [SerializeField] float inputCheckFreq;
     [SerializeField] float inputLag;
     float inputWaitTime;
     
-
 
     private void Awake()
     {
@@ -243,7 +241,14 @@ public class PlayerController : MonoBehaviour
     {
         // Play Animation
         onAttack.Invoke();
-        
+
+        StartCoroutine(DelayedAttack());
+       
+    }
+
+    IEnumerator DelayedAttack()
+    {
+        yield return new WaitForSeconds(.15f);
 
         // Attack Detected Player
         if (attackCol.AIObjects.Count > 0)
